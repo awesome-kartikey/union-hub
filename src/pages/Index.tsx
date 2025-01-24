@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heart, Users, MessageCircle, Search } from "lucide-react";
+import MainNav from "@/components/MainNav";
 
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <MainNav />
       {/* Hero Section */}
       <section className="hero-gradient text-white py-20 px-4 md:py-32">
         <div className="container mx-auto text-center animate-fade-down">
