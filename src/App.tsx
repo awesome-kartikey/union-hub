@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import ViewProfiles from "./pages/ViewProfiles";
 import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<ViewProfiles />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/settings" element={<Settings />} />

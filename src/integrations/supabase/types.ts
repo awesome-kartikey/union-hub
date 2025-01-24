@@ -9,7 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          annual_income: number | null
+          caste: string | null
+          city: string | null
+          complexion: string | null
+          country: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          degree: string | null
+          dietary_preferences: string | null
+          drinking_habits: boolean | null
+          education_qualification: string | null
+          email: string | null
+          expected_qualification: string | null
+          family_type: string | null
+          family_value_system: string | null
+          full_name: string | null
+          gender: string | null
+          height: number | null
+          hobbies: string[] | null
+          id: string
+          interests: string[] | null
+          languages_known: string[] | null
+          marital_status_preference: string | null
+          mother_tongue: string | null
+          parents_occupation: string | null
+          phone_number: string | null
+          physical_disability: string | null
+          preferred_age_range: unknown | null
+          preferred_height_range: unknown | null
+          preferred_location: string | null
+          preferred_profession: string | null
+          profession: string | null
+          professional_status: string | null
+          profile_photo_url: string | null
+          religion: string | null
+          siblings_details: string | null
+          smoking_habits: boolean | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          annual_income?: number | null
+          caste?: string | null
+          city?: string | null
+          complexion?: string | null
+          country?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          degree?: string | null
+          dietary_preferences?: string | null
+          drinking_habits?: boolean | null
+          education_qualification?: string | null
+          email?: string | null
+          expected_qualification?: string | null
+          family_type?: string | null
+          family_value_system?: string | null
+          full_name?: string | null
+          gender?: string | null
+          height?: number | null
+          hobbies?: string[] | null
+          id: string
+          interests?: string[] | null
+          languages_known?: string[] | null
+          marital_status_preference?: string | null
+          mother_tongue?: string | null
+          parents_occupation?: string | null
+          phone_number?: string | null
+          physical_disability?: string | null
+          preferred_age_range?: unknown | null
+          preferred_height_range?: unknown | null
+          preferred_location?: string | null
+          preferred_profession?: string | null
+          profession?: string | null
+          professional_status?: string | null
+          profile_photo_url?: string | null
+          religion?: string | null
+          siblings_details?: string | null
+          smoking_habits?: boolean | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          annual_income?: number | null
+          caste?: string | null
+          city?: string | null
+          complexion?: string | null
+          country?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          degree?: string | null
+          dietary_preferences?: string | null
+          drinking_habits?: boolean | null
+          education_qualification?: string | null
+          email?: string | null
+          expected_qualification?: string | null
+          family_type?: string | null
+          family_value_system?: string | null
+          full_name?: string | null
+          gender?: string | null
+          height?: number | null
+          hobbies?: string[] | null
+          id?: string
+          interests?: string[] | null
+          languages_known?: string[] | null
+          marital_status_preference?: string | null
+          mother_tongue?: string | null
+          parents_occupation?: string | null
+          phone_number?: string | null
+          physical_disability?: string | null
+          preferred_age_range?: unknown | null
+          preferred_height_range?: unknown | null
+          preferred_location?: string | null
+          preferred_profession?: string | null
+          profession?: string | null
+          professional_status?: string | null
+          profile_photo_url?: string | null
+          religion?: string | null
+          siblings_details?: string | null
+          smoking_habits?: boolean | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
