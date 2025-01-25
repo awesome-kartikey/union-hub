@@ -81,6 +81,8 @@ const Index = () => {
                         handleBrowseProfiles();
                       } else if (step.title === "Communicate") {
                         handleMessageAction();
+                      } else {
+                        handleAuthAction();
                       }
                     }}
                   >
