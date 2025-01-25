@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Upload } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -58,7 +60,51 @@ interface ProfileFormData {
 
 const ProfileForm = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const form = useForm<ProfileFormData>();
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('profile-photos')
+        .upload(filePath, file, {
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(filePath);
+
+      // Update profile with photo URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_photo_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfilePhotoUrl(publicUrl);
+      toast.success("Profile photo uploaded successfully!");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
@@ -120,6 +166,38 @@ const ProfileForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Profile Photo Upload */}
+        <div className="space-y-6">
+          <div className="text-2xl font-display font-semibold">Profile Photo</div>
+          <div className="flex items-center gap-4">
+            <Avatar className="w-24 h-24">
+              <AvatarImage src={profilePhotoUrl || undefined} />
+              <AvatarFallback>
+                {form.getValues("fullName")?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-2">
+              <Label htmlFor="photo-upload" className="cursor-pointer">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Upload className="w-4 h-4" />
+                  Upload Photo
+                </div>
+              </Label>
+              <Input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+                disabled={isLoading}
+              />
+              <div className="text-xs text-muted-foreground">
+                Recommended: Square image, at least 400x400px
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Personal Information */}
         <div className="space-y-6">
           <div className="text-2xl font-display font-semibold">Personal Information</div>
