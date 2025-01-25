@@ -2,8 +2,39 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heart, Users, MessageCircle, Search } from "lucide-react";
 import MainNav from "@/components/MainNav";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check authentication status
+    supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+  }, []);
+
+  const handleAuthAction = () => {
+    navigate("/auth");
+  };
+
+  const handleBrowseProfiles = () => {
+    navigate("/profile");
+  };
+
+  const handleMessageAction = () => {
+    if (isAuthenticated) {
+      navigate("/messages");
+    } else {
+      toast.error("Please sign in to send messages");
+      navigate("/auth");
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <MainNav />
@@ -16,7 +47,12 @@ const Index = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
             Join thousands of people who have found their life partner through our platform
           </p>
-          <Button size="lg" variant="secondary" className="text-lg">
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            className="text-lg"
+            onClick={handleAuthAction}
+          >
             Start Your Journey
           </Button>
         </div>
@@ -36,6 +72,21 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2">{step.title}</h3>
                 <p className="text-gray-600">{step.description}</p>
+                {step.action && (
+                  <Button 
+                    className="mt-4" 
+                    variant="outline"
+                    onClick={() => {
+                      if (step.title === "Browse Matches" || step.title === "Connect") {
+                        handleBrowseProfiles();
+                      } else if (step.title === "Communicate") {
+                        handleMessageAction();
+                      }
+                    }}
+                  >
+                    {step.title}
+                  </Button>
+                )}
               </Card>
             ))}
           </div>
@@ -72,7 +123,12 @@ const Index = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-8">
             Ready to Find Your Soulmate?
           </h2>
-          <Button size="lg" variant="secondary" className="text-lg">
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            className="text-lg"
+            onClick={handleAuthAction}
+          >
             Create Your Profile
           </Button>
         </div>
@@ -86,21 +142,25 @@ const steps = [
     icon: Users,
     title: "Create Profile",
     description: "Sign up and create your detailed profile",
+    action: true
   },
   {
     icon: Search,
     title: "Browse Matches",
     description: "Find compatible matches based on your preferences",
+    action: true
   },
   {
     icon: Heart,
     title: "Connect",
     description: "Send interest to profiles you like",
+    action: true
   },
   {
     icon: MessageCircle,
     title: "Communicate",
     description: "Start conversations with your matches",
+    action: true
   },
 ];
 

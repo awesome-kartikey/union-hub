@@ -5,9 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Home, MessageSquare, UserRound, Settings, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const MainNav = () => {
   const isMobile = useIsMobile();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check authentication status
+    supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+  }, []);
 
   const NavigationItems = () => (
     <>
@@ -32,14 +42,16 @@ const MainNav = () => {
                 View Profile
               </Link>
             </li>
-            <li>
-              <Link
-                to="/settings"
-                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-              >
-                Settings
-              </Link>
-            </li>
+            {isAuthenticated && (
+              <li>
+                <Link
+                  to="/settings"
+                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                >
+                  Settings
+                </Link>
+              </li>
+            )}
           </ul>
         </NavigationMenuContent>
       </NavigationMenuItem>
@@ -49,12 +61,14 @@ const MainNav = () => {
           Messages
         </Link>
       </NavigationMenuItem>
-      <NavigationMenuItem>
-        <Link to="/settings" className={navigationMenuTriggerStyle()}>
-          <Settings className="mr-2 h-4 w-4" />
-          Settings
-        </Link>
-      </NavigationMenuItem>
+      {isAuthenticated && (
+        <NavigationMenuItem>
+          <Link to="/settings" className={navigationMenuTriggerStyle()}>
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Link>
+        </NavigationMenuItem>
+      )}
     </>
   );
 
@@ -79,10 +93,12 @@ const MainNav = () => {
             <MessageSquare className="h-5 w-5" />
             Messages
           </Link>
-          <Link to="/settings" className="flex items-center gap-2 text-lg font-semibold">
-            <Settings className="h-5 w-5" />
-            Settings
-          </Link>
+          {isAuthenticated && (
+            <Link to="/settings" className="flex items-center gap-2 text-lg font-semibold">
+              <Settings className="h-5 w-5" />
+              Settings
+            </Link>
+          )}
         </nav>
       </SheetContent>
     </Sheet>
