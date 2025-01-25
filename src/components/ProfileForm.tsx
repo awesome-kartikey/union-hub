@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -629,12 +630,16 @@ const ProfileForm = () => {
                 control={form.control}
                 name="smokingHabits"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Smoking Habits</FormLabel>
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Input type="checkbox" {...field} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Smoking Habits</FormLabel>
+                    </div>
                   </FormItem>
                 )}
               />
@@ -642,12 +647,16 @@ const ProfileForm = () => {
                 control={form.control}
                 name="drinkingHabits"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Drinking Habits</FormLabel>
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Input type="checkbox" {...field} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Drinking Habits</FormLabel>
+                    </div>
                   </FormItem>
                 )}
               />
