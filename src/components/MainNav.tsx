@@ -3,13 +3,16 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, MessageSquare, UserRound, Settings, Menu } from "lucide-react";
+import { Home, MessageSquare, UserRound, Settings, Menu, LogIn, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const MainNav = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
@@ -18,6 +21,35 @@ const MainNav = () => {
       setIsAuthenticated(!!session);
     });
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success("Logged out successfully");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const AuthButtons = () => (
+    <div className="flex items-center gap-2">
+      {isAuthenticated ? (
+        <Button variant="ghost" onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Log Out
+        </Button>
+      ) : (
+        <Link to="/auth">
+          <Button variant="ghost">
+            <LogIn className="mr-2 h-4 w-4" />
+            Sign In
+          </Button>
+        </Link>
+      )}
+    </div>
+  );
 
   const NavigationItems = () => (
     <>
@@ -99,6 +131,9 @@ const MainNav = () => {
               Settings
             </Link>
           )}
+          <div className="mt-4">
+            <AuthButtons />
+          </div>
         </nav>
       </SheetContent>
     </Sheet>
@@ -117,11 +152,14 @@ const MainNav = () => {
             </div>
           </>
         ) : (
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationItems />
-            </NavigationMenuList>
-          </NavigationMenu>
+          <>
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationItems />
+              </NavigationMenuList>
+            </NavigationMenu>
+            <AuthButtons />
+          </>
         )}
       </div>
     </div>
