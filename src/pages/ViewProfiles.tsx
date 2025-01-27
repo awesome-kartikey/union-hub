@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import MainNav from "@/components/MainNav";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Heart, Search } from "lucide-react";
+import { MessageCircle, Heart, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -35,6 +36,7 @@ const ViewProfiles = () => {
     minAge: "",
     maxAge: "",
   });
+  const navigate = useNavigate();
 
   const fetchProfiles = async () => {
     try {
@@ -76,20 +78,85 @@ const ViewProfiles = () => {
     }
   };
 
+  const clearFilters = () => {
+    setFilters({
+      religion: "",
+      caste: "",
+      city: "",
+      minAge: "",
+      maxAge: "",
+    });
+  };
+
+  const handleConnect = async (profileId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to connect with profiles");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("likes")
+        .insert([
+          {
+            sender_id: user.id,
+            receiver_id: profileId,
+          },
+        ]);
+
+      if (error) throw error;
+      toast.success("Connection request sent!");
+    } catch (error: any) {
+      toast.error("Error sending connection request: " + error.message);
+    }
+  };
+
+  const handleMessage = async (profileId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to message profiles");
+        return;
+      }
+
+      // Check if conversation exists
+      const { data: existingConversation, error: fetchError } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${profileId}),and(user1_id.eq.${profileId},user2_id.eq.${user.id})`)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        throw fetchError;
+      }
+
+      if (!existingConversation) {
+        // Create new conversation
+        const { data: newConversation, error: createError } = await supabase
+          .from("conversations")
+          .insert([
+            {
+              user1_id: user.id,
+              user2_id: profileId,
+            },
+          ])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+      }
+
+      // Navigate to messages page
+      navigate("/messages");
+    } catch (error: any) {
+      toast.error("Error starting conversation: " + error.message);
+    }
+  };
+
   useEffect(() => {
     fetchProfiles();
   }, [filters]);
-
-  const calculateAge = (dateOfBirth: string) => {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +166,19 @@ const ViewProfiles = () => {
         
         {/* Search and Filter Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Search Filters</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Search Filters</h2>
+            {Object.values(filters).some(value => value !== "") && (
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="flex items-center gap-2"
+              >
+                <X className="h-4 w-4" />
+                Remove Filters
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               value={filters.religion}
@@ -183,11 +262,19 @@ const ViewProfiles = () => {
                   </p>
                   <p className="text-muted-foreground mb-4">{profile.profession}</p>
                   <div className="flex gap-2">
-                    <Button variant="secondary" size="sm">
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => handleConnect(profile.id)}
+                    >
                       <Heart className="mr-2 h-4 w-4" />
                       Connect
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleMessage(profile.id)}
+                    >
                       <MessageCircle className="mr-2 h-4 w-4" />
                       Message
                     </Button>
