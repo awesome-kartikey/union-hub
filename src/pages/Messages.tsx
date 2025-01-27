@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Check, CheckCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -18,16 +18,19 @@ interface Message {
   is_read: boolean;
 }
 
+interface ConversationUser {
+  full_name: string;
+  profile_photo_url: string;
+}
+
 interface Conversation {
   id: string;
   user1_id: string;
   user2_id: string;
   last_message: string;
   last_updated: string;
-  profiles: {
-    full_name: string;
-    profile_photo_url: string;
-  };
+  user1: ConversationUser;
+  user2: ConversationUser;
 }
 
 const Messages = () => {
