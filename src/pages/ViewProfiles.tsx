@@ -96,7 +96,27 @@ const ViewProfiles = () => {
         return;
       }
 
-      const { error } = await supabase
+      // First check if a like already exists
+      const { data: existingLike, error: checkError } = await supabase
+        .from("likes")
+        .select("id, status")
+        .eq("sender_id", user.id)
+        .eq("receiver_id", profileId)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingLike) {
+        if (existingLike.status === 'sent') {
+          toast.info("You have already sent a connection request to this profile");
+        } else if (existingLike.status === 'accepted') {
+          toast.info("You are already connected with this profile");
+        }
+        return;
+      }
+
+      // If no existing like, create a new one
+      const { error: insertError } = await supabase
         .from("likes")
         .insert([
           {
@@ -105,7 +125,7 @@ const ViewProfiles = () => {
           },
         ]);
 
-      if (error) throw error;
+      if (insertError) throw insertError;
       toast.success("Connection request sent!");
     } catch (error: any) {
       toast.error("Error sending connection request: " + error.message);
