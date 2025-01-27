@@ -96,6 +96,12 @@ const ViewProfiles = () => {
         return;
       }
 
+      // Prevent users from liking their own profile
+      if (user.id === profileId) {
+        toast.error("You cannot connect with your own profile");
+        return;
+      }
+
       // First check if a like already exists
       const { data: existingLike, error: checkError } = await supabase
         .from("likes")
