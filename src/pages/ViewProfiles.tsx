@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Toggle } from "@/components/ui/toggle";
 
 interface Profile {
   id: string;
@@ -29,6 +30,7 @@ interface Profile {
 const ViewProfiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState({
     religion: "",
     caste: "",
@@ -78,6 +80,30 @@ const ViewProfiles = () => {
     }
   };
 
+  const fetchLikedProfiles = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: likes, error } = await supabase
+        .from("likes")
+        .select("receiver_id")
+        .eq("sender_id", user.id)
+        .eq("status", "sent");
+
+      if (error) throw error;
+
+      const likedSet = new Set((likes || []).map(like => like.receiver_id));
+      setLikedProfiles(likedSet);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching liked profiles",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const clearFilters = () => {
     setFilters({
       religion: "",
@@ -92,49 +118,72 @@ const ViewProfiles = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Please sign in to connect with profiles");
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to connect with profiles",
+          variant: "destructive",
+        });
         return;
       }
 
       // Prevent users from liking their own profile
       if (user.id === profileId) {
-        toast.error("You cannot connect with your own profile");
+        toast({
+          title: "Invalid action",
+          description: "You cannot connect with your own profile",
+          variant: "destructive",
+        });
         return;
       }
 
-      // First check if a like already exists
-      const { data: existingLike, error: checkError } = await supabase
-        .from("likes")
-        .select("id, status")
-        .eq("sender_id", user.id)
-        .eq("receiver_id", profileId)
-        .maybeSingle();
+      // Check if already liked
+      const isLiked = likedProfiles.has(profileId);
 
-      if (checkError) throw checkError;
+      if (isLiked) {
+        // Unlike profile
+        const { error: deleteError } = await supabase
+          .from("likes")
+          .delete()
+          .eq("sender_id", user.id)
+          .eq("receiver_id", profileId);
 
-      if (existingLike) {
-        if (existingLike.status === 'sent') {
-          toast.info("You have already sent a connection request to this profile");
-        } else if (existingLike.status === 'accepted') {
-          toast.info("You are already connected with this profile");
-        }
-        return;
+        if (deleteError) throw deleteError;
+
+        setLikedProfiles(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(profileId);
+          return newSet;
+        });
+
+        toast({
+          title: "Profile unliked",
+          description: "You have removed your connection request",
+        });
+      } else {
+        // Like profile
+        const { error: insertError } = await supabase
+          .from("likes")
+          .insert([
+            {
+              sender_id: user.id,
+              receiver_id: profileId,
+            },
+          ]);
+
+        if (insertError) throw insertError;
+
+        setLikedProfiles(prev => new Set([...prev, profileId]));
+        toast({
+          title: "Connection request sent!",
+          description: "Your interest has been registered",
+        });
       }
-
-      // If no existing like, create a new one
-      const { error: insertError } = await supabase
-        .from("likes")
-        .insert([
-          {
-            sender_id: user.id,
-            receiver_id: profileId,
-          },
-        ]);
-
-      if (insertError) throw insertError;
-      toast.success("Connection request sent!");
     } catch (error: any) {
-      toast.error("Error sending connection request: " + error.message);
+      toast({
+        title: "Error",
+        description: "Error managing connection request: " + error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -182,6 +231,7 @@ const ViewProfiles = () => {
 
   useEffect(() => {
     fetchProfiles();
+    fetchLikedProfiles();
   }, [filters]);
 
   return (
@@ -288,14 +338,18 @@ const ViewProfiles = () => {
                   </p>
                   <p className="text-muted-foreground mb-4">{profile.profession}</p>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={() => handleConnect(profile.id)}
+                    <Toggle
+                      pressed={likedProfiles.has(profile.id)}
+                      onPressedChange={() => handleConnect(profile.id)}
+                      className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                     >
-                      <Heart className="mr-2 h-4 w-4" />
-                      Connect
-                    </Button>
+                      <Heart
+                        className={`mr-2 h-4 w-4 ${
+                          likedProfiles.has(profile.id) ? "fill-current" : ""
+                        }`}
+                      />
+                      {likedProfiles.has(profile.id) ? "Connected" : "Connect"}
+                    </Toggle>
                     <Button 
                       variant="outline" 
                       size="sm"
