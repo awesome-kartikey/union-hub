@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import MainNav from "@/components/MainNav";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ interface Conversation {
 
 const Messages = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -176,7 +178,11 @@ const Messages = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Please sign in to message profiles");
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please sign in to message profiles",
+        });
         return;
       }
 
@@ -215,7 +221,11 @@ const Messages = () => {
       // Navigate to messages page
       navigate("/messages");
     } catch (error: any) {
-      toast.error("Error starting conversation: " + error.message);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error starting conversation: " + error.message,
+      });
     }
   };
 
