@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -60,32 +60,10 @@ const MainNav = () => {
         </Link>
       </NavigationMenuItem>
       <NavigationMenuItem>
-        <NavigationMenuTrigger>
+        <Link to="/profile" className={navigationMenuTriggerStyle()}>
           <UserRound className="mr-2 h-4 w-4" />
           Profile
-        </NavigationMenuTrigger>
-        <NavigationMenuContent>
-          <ul className="grid w-[200px] gap-3 p-4">
-            <li>
-              <Link
-                to="/profile"
-                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-              >
-                View Profile
-              </Link>
-            </li>
-            {isAuthenticated && (
-              <li>
-                <Link
-                  to="/settings"
-                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                >
-                  Settings
-                </Link>
-              </li>
-            )}
-          </ul>
-        </NavigationMenuContent>
+        </Link>
       </NavigationMenuItem>
       <NavigationMenuItem>
         <Link to="/messages" className={navigationMenuTriggerStyle()}>
@@ -119,7 +97,7 @@ const MainNav = () => {
           </Link>
           <Link to="/profile" className="flex items-center gap-2 text-lg font-semibold">
             <UserRound className="h-5 w-5" />
-            View Profile
+            Profile
           </Link>
           <Link to="/messages" className="flex items-center gap-2 text-lg font-semibold">
             <MessageSquare className="h-5 w-5" />
