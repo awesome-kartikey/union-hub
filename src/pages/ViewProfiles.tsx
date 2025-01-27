@@ -212,6 +212,8 @@ const ViewProfiles = () => {
     fetchLikedProfiles();
   }, [filters]);
 
+  // ... keep existing code (JSX for the component)
+
   return (
     <div className="min-h-screen bg-background">
       <MainNav />
@@ -345,7 +347,6 @@ const ViewProfiles = () => {
       </div>
     </div>
   );
-
 };
 
 export default ViewProfiles;
