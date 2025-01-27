@@ -96,11 +96,7 @@ const ViewProfiles = () => {
       const likedSet = new Set((likes || []).map(like => like.receiver_id));
       setLikedProfiles(likedSet);
     } catch (error: any) {
-      toast({
-        title: "Error fetching liked profiles",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error fetching liked profiles: " + error.message);
     }
   };
 
@@ -118,21 +114,13 @@ const ViewProfiles = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to connect with profiles",
-          variant: "destructive",
-        });
+        toast.error("Please sign in to connect with profiles");
         return;
       }
 
       // Prevent users from liking their own profile
       if (user.id === profileId) {
-        toast({
-          title: "Invalid action",
-          description: "You cannot connect with your own profile",
-          variant: "destructive",
-        });
+        toast.error("You cannot connect with your own profile");
         return;
       }
 
@@ -155,10 +143,7 @@ const ViewProfiles = () => {
           return newSet;
         });
 
-        toast({
-          title: "Profile unliked",
-          description: "You have removed your connection request",
-        });
+        toast.success("You have removed your connection request");
       } else {
         // Like profile
         const { error: insertError } = await supabase
@@ -173,17 +158,10 @@ const ViewProfiles = () => {
         if (insertError) throw insertError;
 
         setLikedProfiles(prev => new Set([...prev, profileId]));
-        toast({
-          title: "Connection request sent!",
-          description: "Your interest has been registered",
-        });
+        toast.success("Connection request sent!");
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Error managing connection request: " + error.message,
-        variant: "destructive",
-      });
+      toast.error("Error managing connection request: " + error.message);
     }
   };
 
@@ -367,6 +345,7 @@ const ViewProfiles = () => {
       </div>
     </div>
   );
+
 };
 
 export default ViewProfiles;
