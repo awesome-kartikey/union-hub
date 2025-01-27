@@ -172,6 +172,53 @@ const Messages = () => {
     };
   };
 
+  const handleMessage = async (profileId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to message profiles");
+        return;
+      }
+
+      // Check if conversation exists
+      const { data: existingConversation, error: fetchError } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${profileId}),and(user1_id.eq.${profileId},user2_id.eq.${user.id})`)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        throw fetchError;
+      }
+
+      let conversationId;
+      
+      if (!existingConversation) {
+        // Create new conversation
+        const { data: newConversation, error: createError } = await supabase
+          .from("conversations")
+          .insert([
+            {
+              user1_id: user.id,
+              user2_id: profileId,
+            },
+          ])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        conversationId = newConversation.id;
+      } else {
+        conversationId = existingConversation.id;
+      }
+
+      // Navigate to messages page
+      navigate("/messages");
+    } catch (error: any) {
+      toast.error("Error starting conversation: " + error.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <MainNav />
