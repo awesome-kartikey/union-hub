@@ -125,9 +125,16 @@ const ViewProfiles = () => {
       }
 
       // Check if already liked
-      const isLiked = likedProfiles.has(profileId);
+      const { data: existingLike, error: checkError } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("sender_id", user.id)
+        .eq("receiver_id", profileId)
+        .maybeSingle();
 
-      if (isLiked) {
+      if (checkError) throw checkError;
+
+      if (existingLike) {
         // Unlike profile
         const { error: deleteError } = await supabase
           .from("likes")
@@ -152,6 +159,7 @@ const ViewProfiles = () => {
             {
               sender_id: user.id,
               receiver_id: profileId,
+              status: "sent"
             },
           ]);
 
@@ -178,7 +186,7 @@ const ViewProfiles = () => {
         .from("conversations")
         .select("id")
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${profileId}),and(user1_id.eq.${profileId},user2_id.eq.${user.id})`)
-        .single();
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError;
